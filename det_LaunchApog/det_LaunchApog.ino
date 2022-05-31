@@ -300,16 +300,19 @@ while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
 
     KG = errorEst / (errorEst + errorMes);
     fVals[iKG] = unfVals[iKG-1] + KG*(unfVals[iKG] - unfVals[iKG-1]);
+      // if there is an error in the filtering, it is likely in the line above. I'm not sure what estimate actually is mathematically
     errorEst = (1-KG)*errorEst;
 
     // Check if the value changes significantly
-    if(abs(unfVals[i]) > abs(unfVals[i-1]) + errorMes  || (abs(unfVals[i]) < abs(unfVals[i-1]) - errorMes)) {
+    if(abs(unfVals[i]) > abs(unfVals[i-1]) + errorMes  || (abs(unfVals[i]) < abs(unfVals[i-1]) - errorMes)) { 
+
       
         errorEst = abs(unfVals[i] - unfVals[i-1]);
 
         // Check to see how if the error is reset too often  
         inew = iKG;
         if(inew < iKGold + 50){
+          Serial.println("Error is too large!");
         }
         iKGold = inew;
 
