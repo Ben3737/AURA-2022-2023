@@ -60,7 +60,8 @@ int waiting;
 float errorEst = 1; // Error estimated
 float errorMes = 0.05; // Error measured by sensor (FROM DATA SHEETS)
 float KG = errorEst / (errorEst + errorMes); //
-float arrVals[3];
+float unfVals[3];
+float fVals[3];
 
 int iKG = 1; // was originally 2, I think it's because MATLAB starts at 1
 int iKGold = 0;
@@ -285,25 +286,26 @@ else{
 /////////////////////////// KALMAN FILTER STUFF!!! /////////////////////////
 
 // 0.05 is error in measurement on sensor
-// compared to the matlab code, estimate is equivalent to arrVals. Size is predetermined, once it exceeds size it resets itself to save memory
+// compared to the matlab code, estimate is equivalent to unfVals. Size is predetermined, once it exceeds size it resets itself to save memory
 // Also fuck Arduino code, if I forget to write another semi colon Im going to fucking lose it
 
-arrVals[1] = bmp.readAltitude();
+unfVals[1] = bmp.readAltitude();
 delay(500); // don't want to get the same altitude
-arrVals[2] = bmp.readAltitude();
+unfVals[2] = bmp.readAltitude();
 delay(500);
-arrVals[3] = bmp.readAltitude();
+unfVals[3] = bmp.readAltitude();
+// this is the unfiltered stuff
 
 while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
 
     KG = errorEst / (errorEst + errorMes);
-    arrVals[iKG] = arrVals[iKG-1] + KG*(arrVals[iKG] - arrVals[iKG-1]);
+    fVals[iKG] = unfVals[iKG-1] + KG*(unfVals[iKG] - unfVals[iKG-1]);
     errorEst = (1-KG)*errorEst;
 
     // Check if the value changes significantly
-    if(abs(arrVals[i]) > abs(arrVals[i-1]) + errorMes  || (abs(arrVals[i]) < abs(arrVals[i-1]) - errorMes)) {
+    if(abs(unfVals[i]) > abs(unfVals[i-1]) + errorMes  || (abs(unfVals[i]) < abs(unfVals[i-1]) - errorMes)) {
       
-        errorEst = abs(arrVals[i] - arrVals[i-1]);
+        errorEst = abs(unfVals[i] - unfVals[i-1]);
 
         // Check to see how if the error is reset too often  
         inew = iKG;
@@ -313,18 +315,21 @@ while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
 
     }
 
-    i = i + 1;
+    iKG = iKG + 1;
 
   
 }
-/*if(iKG==3){ // clear, take more values
 
-}  I don't think I need this? It should reset every time it runs through the loop right?
-*/
+// Above loop should be done, resetting iKG
 
+iKG = 1;
 
+while(iKG<=3){
 
+  Serial.println(fVals[iKG]);
 
+  iKG = iKG + 1;
+}
 
 
 
