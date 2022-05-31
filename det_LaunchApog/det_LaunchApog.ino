@@ -1,6 +1,8 @@
 // Ben Davis & Jacob Birch
 // 5-30-22
 // This is for an Altimeter and launch detection.
+// Teensy 4.1
+
 #include <SPI.h>
 #include <SD.h>
 #define BUFFERSIZE 512
@@ -54,11 +56,15 @@ char RocketStatus;
 
 int waiting;
 
-
+// kalman
 float errorEst = 1; // Error estimated
-float errorMes = 0.05; // Error measured by sensor (LOOK UP DATA SHEETS)
+float errorMes = 0.05; // Error measured by sensor (FROM DATA SHEETS)
 float KG = errorEst / (errorEst + errorMes); //
 float arrVals[3];
+
+int iKG = 1; // was originally 2, I think it's because MATLAB starts at 1
+int iKGold = 0;
+int inew;
 
 
 
@@ -204,7 +210,7 @@ void loop() {
   if (launch){
     if(!Apygee){
       
-      if(!A){ // Im assuming A = apogee?
+      if(!A){ // A = Apogee
         h_old = bmp.readAltitude();
         i = 0;
         A = true;
@@ -270,7 +276,7 @@ if(Deploy){
 else{
   pinMode(4, LOW);
   pinMode(5, LOW);
-  pinMode(6, LOW); // if not deployed don't turn the motor!!
+  pinMode(6, LOW); // if not deployed don't turn that motor!!
 }
 
 
@@ -279,37 +285,55 @@ else{
 /////////////////////////// KALMAN FILTER STUFF!!! /////////////////////////
 
 // 0.05 is error in measurement on sensor
+// compared to the matlab code, estimate is equivalent to arrVals. Size is predetermined, once it exceeds size it resets itself to save memory
+// Also fuck Arduino code, if I forget to write another semi colon Im going to fucking lose it
 
-/*
-i = 2;
-iold = 0;
-while i <= length(unfilteredData)
+arrVals[1] = bmp.readAltitude();
+delay(500); // don't want to get the same altitude
+arrVals[2] = bmp.readAltitude();
+delay(500);
+arrVals[3] = bmp.readAltitude();
+
+while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
+
     KG = errorEst / (errorEst + errorMes);
-    Estimate(i) = Estimate(i-1) + KG*(unfilteredData(i) - Estimate(i-1));
+    arrVals[iKG] = arrVals[iKG-1] + KG*(arrVals[iKG] - arrVals[iKG-1]);
     errorEst = (1-KG)*errorEst;
 
     // Check if the value changes significantly
-    if (abs(unfilteredData(i)) > abs(unfilteredData(i-1)) + errorMes ) || (abs(unfilteredData(i)) < abs(unfilteredData(i-1)) - errorMes)
+    if(abs(arrVals[i]) > abs(arrVals[i-1]) + errorMes  || (abs(arrVals[i]) < abs(arrVals[i-1]) - errorMes)) {
       
-        errorEst = abs(unfilteredData(i) - unfilteredData(i-1));
+        errorEst = abs(arrVals[i] - arrVals[i-1]);
 
         // Check to see how if the error is reset too often  
-        inew = i;
-        if (inew < iold + 50)
-            fprintf("Error of Measurements is too large at %i \n",i)
-        end
-        iold = inew;
+        inew = iKG;
+        if(inew < iKGold + 50){
+        }
+        iKGold = inew;
 
-    end
+    }
 
     i = i + 1;
-end %%
 
+  
+}
+/*if(iKG==3){ // clear, take more values
 
+}  I don't think I need this? It should reset every time it runs through the loop right?
 */
 
 
- } // END LOOP!!
+
+
+
+
+
+
+ }       // END LOOP!! 
+
+
+
+ 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 ///// For the SD card /////
 /*

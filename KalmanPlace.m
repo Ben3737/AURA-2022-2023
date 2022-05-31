@@ -1,3 +1,4 @@
+%% Kalman Filter
 %{
  Ben Davis
  5-14-22
@@ -50,14 +51,15 @@ end
 xAxis = [1:1:length(unfilteredData)];
 
 
-% Filter the data %%
+%% Filtering Data
 errorEst = 1; % Expected
-errorMes = 1; % Measurement
+errorMes = .05; % Measurement
+% For our baro sensor specifically, from data sheets
 KG = errorEst / (errorEst + errorMes);
 
 Estimate = rand(1,DataLength);
 Estimate(1) = unfilteredData(1);
-% ESTIMATE FOR OUR BARO SENSOR -> 0.05 = MEA
+
 
 i = 2;
 iold = 0;
@@ -82,6 +84,9 @@ while i <= length(unfilteredData)
 
     i = i + 1;
 end %%
+
+
+%% Graphing
 
 tiledlayout(2,1)
 % Top plot
