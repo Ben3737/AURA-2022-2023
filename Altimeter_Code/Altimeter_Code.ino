@@ -66,6 +66,7 @@ float fVals[3];
 int iKG = 1; // was originally 2, I think it's because MATLAB starts at 1
 int iKGold = 0;
 int inew;
+int filtAlt;
 
 
 
@@ -195,7 +196,10 @@ void loop() {
   // Calculate altitude assuming 'standard' barometric
   // pressure of 1013.25 millibar = 101325 Pascal
   Serial.print("Altitude = ");
-  Serial.print(bmp.readAltitude());
+
+  filtAlt = kalman_Func;
+  
+  Serial.print(filtAlt);
   Serial.println(" meters");
   Serial.println();
 //////////////////////////////////////////////////////////////////////////////////////////////////////  
@@ -281,9 +285,14 @@ else{
 }
 
 
-
+}
 
 /////////////////////////// KALMAN FILTER STUFF!!! /////////////////////////
+
+int kalman_Func() {
+
+
+
 
 // 0.05 is error in measurement on sensor
 // compared to the matlab code, estimate is equivalent to unfVals. Size is predetermined, once it exceeds size it resets itself to save memory
@@ -332,17 +341,17 @@ while(iKG<=3){
   Serial.println(fVals[iKG]);
 
   iKG = iKG + 1;
-}
+} // This prints the data
+
+return fVals;
+
+
+} // end of function
 
 
 
 
- }       // END LOOP!! 
 
-
-
- 
-//////////////////////////////////////////////////////////////////////////////////////////////////////
 ///// For the SD card /////
 /*
   //printRawAGMT( myICM.agmt );
