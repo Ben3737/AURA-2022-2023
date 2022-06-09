@@ -60,8 +60,8 @@ int waiting;
 float errorEst = 1; // Error estimated
 float errorMes = 0.05; // Error measured by sensor (FROM DATA SHEETS)
 float KG = errorEst / (errorEst + errorMes); //
-float unfVals[3];
-float fVals[3];
+float unfVals[2];
+float fVals[2];
 
 int iKG = 1; // was originally 2, I think it's because MATLAB starts at 1
 int iKGold = 0;
@@ -197,7 +197,7 @@ void loop() {
   // pressure of 1013.25 millibar = 101325 Pascal
   Serial.print("Altitude = ");
 
-  filtAlt = kalman_Func;
+  filtAlt = kalman_Func; // This is the filtered ALtitude
   
   Serial.print(filtAlt);
   Serial.println(" meters");
@@ -206,7 +206,7 @@ void loop() {
 // Detect launch
   if (!launch){
     RocketStatus = '0';
-    if (bmp.readAltitude() > ho+hrange){ // if altitude read is greater than original altitude + range, set launch = true. Hrange = 10 right now
+    if (filtAlt > ho+hrange){ // if altitude read is greater than original altitude + range, set launch = true. Hrange = 10 right now
         launch = true;
       } 
   }
@@ -216,12 +216,12 @@ void loop() {
     if(!Apygee){
       
       if(!A){ // A = Apogee
-        h_old = bmp.readAltitude();
+        h_old = filtAlt;
         i = 0;
         A = true;
       }
 
-      h = bmp.readAltitude();
+      h = filtAlt;
       
       if(h < h_old){ // if height less than old height after 10 seconds, we have reached apogee
         if(i > 10){
@@ -242,7 +242,7 @@ void loop() {
 // Detect deployment
   if(Apygee){
     if(!Deploy){
-      if (bmp.readAltitude() < depHight){ // if altitude is less than deploy height, AFTER APOGEE
+      if (filtAlt < depHight){ // if altitude is less than deploy height, AFTER APOGEE
         D = true; // d = deploy
         Serial.println("reset");
       }
@@ -257,7 +257,7 @@ void loop() {
        
       j = j + 1;
       
-      if (bmp.readAltitude() > depHight){ // if has not lowered to deploy height yet
+      if (filtAlt > depHight){ // if has not lowered to deploy height yet
         D = false;
         j = 0;
       }
@@ -289,7 +289,7 @@ else{
 
 /////////////////////////// KALMAN FILTER STUFF!!! /////////////////////////
 
-int kalman_Func() {
+float kalman_Func() {
 
 
 
@@ -299,13 +299,10 @@ int kalman_Func() {
 // Also fuck Arduino code, if I forget to write another semi colon Im going to fucking lose it
 
 unfVals[1] = bmp.readAltitude();
-delay(500); // don't want to get the same altitude
-unfVals[2] = bmp.readAltitude();
 delay(500);
-unfVals[3] = bmp.readAltitude();
-// this is the unfiltered stuff
+unfVals[2] = bmp.readAltitude();
 
-while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
+while(iKG<=2) { // 2 is the max amount of data I have it set to store right now
 
     KG = errorEst / (errorEst + errorMes);
     fVals[iKG] = unfVals[iKG-1] + KG*(unfVals[iKG] - unfVals[iKG-1]);
@@ -336,14 +333,14 @@ while(iKG<=3) { // 3 is the max amount of data I have it set to hold right now
 
 iKG = 1;
 
-while(iKG<=3){
+while(iKG<=2){
 
   Serial.println(fVals[iKG]);
 
   iKG = iKG + 1;
 } // This prints the data
 
-return fVals;
+return fVals[1];
 
 
 } // end of function
