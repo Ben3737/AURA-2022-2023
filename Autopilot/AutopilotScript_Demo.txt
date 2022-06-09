@@ -1,13 +1,5 @@
 print 'Start Script'
+int auto_signal = -1 #pick a value not used by iBus. 
 
-if(ReceivedSignal):
-	Script.ChangeMode("Guided")
-
-#Notes: 
-# Do we need more information for "Guided" mode to work? See other example for how that might look. 
-# How to do received signal? Some ideas:
-#	Script.GetParam(chx1in) - returns an input channel. Possibly could hook up the arduino differently?
-#	Script.WaitFor(string, timeout) - I can't find good examples of how this is used, but if there 
-#					is an sBus command that we will not use and will not do anything, 
-#					perhaps the arduino could send that signal?
-# 	Another GetParam - Is there any other variable that would indicate we are released from the rocket?
+if(Script.ChangeMode(chx1in) == auto_signal):
+	Script.ChangeMode("RTL")
