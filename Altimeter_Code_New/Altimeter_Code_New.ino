@@ -18,7 +18,7 @@ bool Deploy;
 bool L;
 bool A;
 bool D;
-int ho;
+float ho;
 int depHight = 1;
 int hrange = 1;
 int trange = 1;
@@ -67,9 +67,12 @@ void setup() {
   // this is needed for accurate altitude measurement
   // STD SLP = 1013.26 hPa
   baro.setSeaPressure(1013.25); // hPa
+  ho = baro.getAltitude();
+  //  Serial.println(ho);
 
-//  oVal = baro.getAltitude();
-//  Alt1 = kalman_Func();
+
+  //  oVal = baro.getAltitude();
+  //  Alt1 = kalman_Func();
 }
 
 void loop() {
@@ -79,10 +82,13 @@ void loop() {
   //Serial.print("Starting kal func"); // for debugging
 
   Alt = kalman_Func();
+  Serial.print("Altitude: ");
+  Serial.print(Alt);
+  Serial.println(" m");
+  
 
   //Serial.print("Ending kal func"); // for debugging
 
-  Serial.println(Alt);
 
 }
 
@@ -122,10 +128,10 @@ float kalman_Func() {
       // Check to see how if the error is reset too often
       inew = iKG;
       if (inew < iKGold + 1) {
-//        Serial.println("Error is too large!");
+        //        Serial.println("Error is too large!");
 
-//        Serial.print("Inew: "); Serial.println(inew);
-//        Serial.print("Ikgold: "); Serial.println(iKGold);
+        //        Serial.print("Inew: "); Serial.println(inew);
+        //        Serial.print("Ikgold: "); Serial.println(iKGold);
 
       }
       iKGold = inew;
