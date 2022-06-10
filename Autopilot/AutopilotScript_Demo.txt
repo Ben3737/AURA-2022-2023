@@ -1,5 +1,0 @@
-print 'Start Script'
-int auto_signal = -1 #pick a value not used by iBus. 
-
-if(Script.ChangeMode(chx1in) == auto_signal):
-	Script.ChangeMode("RTL")
