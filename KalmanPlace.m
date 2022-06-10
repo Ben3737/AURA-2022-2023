@@ -1,4 +1,3 @@
-%% Kalman Filter
 %{
  Ben Davis
  5-14-22
@@ -10,7 +9,7 @@
 clc; clear all; close all;
 
 % Create an array of random data
-DataLength = 1000; 
+DataLength = 1000;
 unfilteredData = rand(1,DataLength); 
 
 
@@ -51,27 +50,25 @@ end
 xAxis = [1:1:length(unfilteredData)];
 
 
-%% Filtering Data
-errorEst = 1; % Expected
-errorMes = .05; % Measurement
-% For our baro sensor specifically, from data sheets
-KG = errorEst / (errorEst + errorMes);
+% Filter the data
+ErrorEst = 1;
+ErrorMes = 1;
+KG = ErrorEst / (ErrorEst + ErrorMes);
 
-Estimate = rand(1,DataLength);
-Estimate(1) = unfilteredData(1);
-
+fVals = rand(1,DataLength);
+fVals(1) = unfilteredData(1);
 
 i = 2;
 iold = 0;
 while i <= length(unfilteredData)
-    KG = errorEst / (errorEst + errorMes);
-    Estimate(i) = Estimate(i-1) + KG*(unfilteredData(i) - Estimate(i-1));
-    errorEst = (1-KG)*errorEst;
+    KG = ErrorEst / (ErrorEst + ErrorMes);
+    fVals(i) = fVals(i-1) + KG*(unfilteredData(i) - fVals(i-1));
+    ErrorEst = (1-KG)*ErrorEst;
 
     % Check if the value changes significantly
-    if (abs(unfilteredData(i)) > abs(unfilteredData(i-1)) + errorMes ) || (abs(unfilteredData(i)) < abs(unfilteredData(i-1)) - errorMes)
-      
-        errorEst = abs(unfilteredData(i) - unfilteredData(i-1));
+    if (abs(unfilteredData(i)) > abs(unfilteredData(i-1)) + ErrorMes ) || (abs(unfilteredData(i)) < abs(unfilteredData(i-1)) - ErrorMes)
+
+        ErrorEst = abs(unfilteredData(i) - unfilteredData(i-1));
 
         % Check to see how if the error is reset too often  
         inew = i;
@@ -83,10 +80,7 @@ while i <= length(unfilteredData)
     end
 
     i = i + 1;
-end %%
-
-
-%% Graphing
+end
 
 tiledlayout(2,1)
 % Top plot
@@ -96,8 +90,6 @@ title('Unfiltered Data')
 grid on
 % Bottom plot
 nexttile
-plot(xAxis,Estimate)
+plot(xAxis,fVals)
 title('Filtered Data')
 grid on
-
-
