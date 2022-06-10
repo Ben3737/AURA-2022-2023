@@ -29,8 +29,8 @@ ICM_20948_I2C myICM; // Otherwise create an ICM_20948_I2C object
 
 // Include Libraries
 #include <TimeLib.h>
-#include <Adafruit_BMP085.h>
-
+// #include <Adafruit_BMP085.h>
+#include <Adafruit_MPL3115A2.h>
 
 Adafruit_BMP085 bmp;
 
@@ -76,7 +76,7 @@ void setup() {
   // initialize serial:
   Serial.begin(9600);
   // see if the card is present and can be initialized:
-  if (!SD.begin(BUILTIN_SDCARD)) {
+ /* if (!SD.begin(BUILTIN_SDCARD)) {
     Serial.println("Card failed, or not present");
     // don't do anything more:
    return;
@@ -90,7 +90,11 @@ void setup() {
       Serial.println(F("Ready to accept serial data..."));
     }
     dataFile.close();
+    */
  ///// For the IMU /////
+ /* 
+  *  
+  *  
  WIRE_PORT.begin();
   WIRE_PORT.setClock(400000);
 
@@ -110,6 +114,7 @@ void setup() {
       initialized = true;
     }
   }
+  */
   ///// For the Altemeter /////
   if (!bmp.begin()) {
   Serial.println("Could not find a valid BMP085 sensor, check wiring!");
@@ -199,7 +204,7 @@ void loop() {
 
   filtAlt = kalman_Func; // This is the filtered ALtitude
   
-  Serial.print(filtAlt);
+  Serial.print(bmp.readAltitude());
   Serial.println(" meters");
   Serial.println();
 //////////////////////////////////////////////////////////////////////////////////////////////////////  
