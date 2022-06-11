@@ -29,8 +29,8 @@ ICM_20948_I2C myICM; // Otherwise create an ICM_20948_I2C object
 
 // Include Libraries
 #include <TimeLib.h>
-// #include <Adafruit_BMP085.h>
-#include <Adafruit_MPL3115A2.h>
+ #include <Adafruit_BMP085.h>
+//#include <Adafruit_MPL3115A2.h>
 
 Adafruit_BMP085 bmp;
 
