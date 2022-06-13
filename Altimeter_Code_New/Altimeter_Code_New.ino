@@ -19,9 +19,9 @@ bool L;
 bool A;
 bool D;
 float ho; // h original
-int depHeight = 1;
-int hrange = 1; // CHANGE LATER!!
-int trange = 1;
+int depHeight = 175; // Deploy height in meters -> 1000 ft right now
+int hrange = .5; // Determines range for launch detection. If detects launch early, change this to 15 probably
+int arange = 1; // Adjust!!
 elapsedMillis t;
 elapsedMillis to;
 float h_old; // for detecting apogee
@@ -72,6 +72,8 @@ void setup() {
   testAlt = baro.getAltitude();
   ho = kalman_Func();
 
+  Serial.print("Original height: "); Serial.println(ho);
+
   if (abs(ho - testAlt) >= testBound) {
     // This checks and makes sure that the unfiltered data and filtered data are somewhat close together (within testBound meters)
     // If not, it will print an error message.
@@ -111,32 +113,36 @@ void loop() {
   // CHECK APOGEE
   if (launch) {
     if (!apogee) {
-
+      Serial.println("Checking apogee");
       if (!A) {
 
         h_old = Alt;
         i = 0;
-        A = true;
+        A = true; // I think A means check for apogee
       }
 
       h = Alt;
 
-      if (h < h_old) { // if current height is less than old height after 10 iterations
+      if (h < h_old - arange) { // if current height is less than old height after 10 iterations
+        // the - 10 makes it so that unstable data doesn't interfere with it.
         if (i > 10) {
+          if (h < h_old - arange) {
           apogee = true;
           RocketStatus = 'A';
           Serial.println("Apogee reached");
+          }
         }
         i = i + 1;
       }
       if (h > h_old) {
-        A = false;
+        A = false; // Causes it to reset h_old as it loops through again
 
       }
     }
   } // End of apogee phase
 
   if (apogee) {
+    Serial.println("Checking for deploy height");
     if (!deploy) { // if apogee and has not deployed yet
       if (Alt < depHeight) { // if altitude is less than deploy height (remember it is going down at this point)
         D = true;
@@ -224,7 +230,7 @@ float kalman_Func() {
   secondVal = fVals[1];
   thirdVal = fVals[2];
 
-  return firstVal; // Can't return more than one val :(
+  return secondVal; // Can't return more than one val :(
   // TRY FIRST VAL, IF IT DOES NOT WORK USE SECOND VAL WHEN TESTING!!
 
 }
