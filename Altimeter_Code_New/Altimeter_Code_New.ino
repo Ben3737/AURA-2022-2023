@@ -19,8 +19,8 @@ bool L;
 bool A;
 bool D;
 float ho; // h original
-int depHeight = 175; // Deploy height in meters -> 1000 ft right now
-int hrange = .5; // Determines range for launch detection. If detects launch early, change this to 15 probably
+int depHeight = 300; // Deploy height in meters -> 1000 ft right now
+int hrange = 15; // Determines range for launch detection. If detects launch early, change this to 15 probably
 int arange = 1; // Adjust!!
 elapsedMillis t;
 elapsedMillis to;
