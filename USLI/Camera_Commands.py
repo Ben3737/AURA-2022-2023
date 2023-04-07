@@ -11,54 +11,32 @@ camera = PiCamera()
 
  
 
-# Define the camera commands
 
-commands = {
+# Read the commands from the file
+with open("file.txt", "r") as f:
+    commands = f.read().strip().split()
 
-    "A1": lambda: camera.rotate(60),
+# Process each command
+for command in commands:
+    if command == "A1":
+        camera.rotate(60)
+    elif command == "B2":
+        camera.rotate(-60)
+    elif command == "C3":
+        camera.capture("image.jpg")
+        time.sleep(5) # to take pic
+    elif command == "D4":
+        camera.color_effects = (128, 128)
+    elif command == "E5":
+        camera.color_effects = None
+    elif command == "F6":
+        camera.rotation = 180
+    elif command == "G7":
+        camera.image_effect = "colorbalance"
+    elif command == "H8":
+        camera.image_effect = None
 
-    "B2": lambda: camera.rotate(-60),
 
-    "C3": lambda: camera.capture('image.jpg'),
+# Remove the image file?
 
-    "D4": lambda: camera.color_effects((128, 128)),
-
-    "E5": lambda: camera.color_effects(None),
-
-    "F6": lambda: camera.rotation = 180,
-
-    "G7": lambda: camera.image_effect = 'negative',
-
-    "H8": lambda: camera.image_effect = 'none',
-
-}
-
- 
-
-# Read the APRS message from file.txt
-
-with open('file.txt', 'r') as file:
-
-    message = file.read().strip()
-
- 
-
-# Parse the APRS message and execute the camera commands
-
-for command in message.split(' '):
-
-    if command in commands:
-
-        commands[command]()
-
- 
-
-# Wait for the camera to finish capturing the image
-
-time.sleep(5)
-
- 
-
-# Remove the image file
-
-os.remove('image.jpg')
+# os.remove('image.jpg')
