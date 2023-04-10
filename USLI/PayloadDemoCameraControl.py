@@ -27,173 +27,53 @@
 #========================================================================
 # import files
 #========================================================================
+#import RPi.GPIO as GPIO
+#GPIO.setmode(GPIO.BOARD)
 import picamera # This is used to interface with the camera
 import time         # This is used for "sleep" functions and other utilities involving time
 import digitalio    # This is used to interface with the motors, and servos
-import machine  # This is used to for board utilities and communicating with sensors
-from bmp280 import BMP280
-#========================================================================
-# Create camera objects
-#========================================================================
-camera = PiCamera() # this creates an object required to interface with the camera library
+import board
+import adafruit_mpu6050
+import bmpsensor
+from fusion import Fusion
 
+#========================================================================
+# Create objects
+#========================================================================
+# Create camera object
+
+camera = picamera.PiCamera() # this creates an object required to interface with the camera library
 camera.resolution = (1920, 1080) # this deffines the quality of the images
+#Create MPU6050 object
+#i2c = board.I2C()  # uses board.SCL and board.SDA
+#mpu = adafruit_mpu6050.MPU6050(i2c)
+
+# Create motor objects
 
 
-#========================================================================
-# Create DC motor objects
-#========================================================================
-# Define the outputs that are dedicated to MMORPG
-MMORPGa = Pin(14, Pin.OUT) 
-MMORPGb = Pin(15, Pin.OUT)
-# Define the outputs that are dedicated to RAPS
-RAPSa = Pin(14, Pin.OUT)
-RAPSb = Pin(15, Pin.OUT)
-# lock MMORPG and RAPS in place by setting all outputs to "HIGH"
-MMORPGa.high()
-MMORPGb.high()
-RAPSa.high()
-RAPSb.high()
+#Motor1A = 38
+#Motor1B = 40
+#Motor2A = 37
+#Motor2B = 35
 
+#GPIO.setup(Motor1A, GPIO.OUT)
+#GPIO.setup(Motor1B, GPIO.OUT)
 
-#========================================================================
-# Create stepper motor objects
-#========================================================================
-# Stepper motors are complex, if you care how they actually work, I sugest reading the artical linked in
-# the headder
-enable_pin = digitalio.DigitalInOut(board.D18)
-coil_A_1_pin = digitalio.DigitalInOut(board.D4)
-coil_A_2_pin = digitalio.DigitalInOut(board.D17)
-coil_B_1_pin = digitalio.DigitalInOut(board.D23)
-coil_B_2_pin = digitalio.DigitalInOut(board.D24)
-enable_pin.direction = digitalio.Direction.OUTPUT
-coil_A_1_pin.direction = digitalio.Direction.OUTPUT
-coil_A_2_pin.direction = digitalio.Direction.OUTPUT
-coil_B_1_pin.direction = digitalio.Direction.OUTPUT
-coil_B_2_pin.direction = digitalio.Direction.OUTPUT
-enable_pin.value = True
-
-    
-#========================================================================
-# Determine the state of the payload using avalible sensor data:
-#========================================================================
-Launched = False
-Apogee = False
-Landed = False
-count = 0
-startHeight = 
-
-while not Landed:
-    while not Launched:
-        
-        if (pitch < 45) and (altitude > startHeight + 500) and (roll < 45):
-            count += 1
-        if (pitch > 45) or (altitude < startHeight + 500) or (roll > 45):
-            count = 0
-        if (count > 10):
-            Launched = True
-    if Launched:
-        count = 0
-        while not Apogee:
-            altitude = 
-            verticalSpeed = altitude - oldAltitude
-            oldAltitude = altitude
-            if (verticalSpeed < 0):
-                count += 1
-            if (verticalSpeed > 0):
-                count = 0
-            if (count > 10):
-                Apogee = True
-        count = 0
-        if not Apogee:
-            altitude = 
-            verticalSpeed = altitude - oldAltitude
-            oldAltitude = altitude
-            if (verticalSpeed < 10) or (verticalSpeed > -10):
-                count += 1
-            if (verticalSpeed > 10) or (verticalSpeed < -10):
-                count = 0
-            if (count > 10):
-                Apogee = True
-        if Apogee:
-            break
-
-
-try:
-       from smbus2 import SMBus
-except ImportError:
-       from smbus import SMBus
-
-#========================================================================
-# Task 1: A1—Turn camera 60º to the right
-#========================================================================
-# This task is done using a stepper motor
-backward(0.1, 60)
-takepicture()
-
-
-#========================================================================
-# Task 2: B2—Turn camera 60º to the left
-#========================================================================
-# This task is done using a stepper motor
-forward(0.1, 60)
-takepicture()
-
-#========================================================================
-# Task 3: C3—Take picture
-#========================================================================
-# This task is redundent and it will be performed after every other task
-
-#========================================================================
-# Task 4: D4—Change camera mode from color to grayscale
-#========================================================================
-camera.color_effects = (128, 128)
-takepicture()
-
-#========================================================================
-# Task 5: E5—Change camera mode back from grayscale to color
-#========================================================================
-camera.image_effect = 'none'
-takepicture()
-
-#========================================================================
-# Task 6: F6—Rotate image 180º (upside down). camera.rotation = 180
-#========================================================================
-camera.rotation = 180
-takepicture()
-camera.rotation = 0
-
-#========================================================================
-# Task 7: G7—Special effects filter (Apply any filter or image distortion you want and
-# state what filter or distortion was used).
-#========================================================================
-camera.image_effect = 'colorswap'
-takepicture()
-
-#========================================================================
-# Task 9: H8—Remove all filters.
-#========================================================================
-camera.image_effect = 'none'
-takepicture()
-
+#GPIO.setup(Motor2A, GPIO.OUT)
+#GPIO.setup(Motor2B, GPIO.OUT)
 
 #========================================================================
 # Functions:
 #========================================================================
 
 def takepicture():
-    # This is a function that uses the "picamera" library to take and timestamp an image
-    # for the camera to "wake up" and set the correct light level, the library says to sleep for at least
-    # two seconds before taking a picture
-    camera.start_preview() 
-    sleep(2)
-    # these two lines use the "time" library to get the date and time and then annotate the image with that information
-    When = str(time.localtime()[3]) + '_' + str(time.localtime()[4]) + '_' + str(time.localtime()[5])+ '_ ' +str(time.localtime()[2]) + '_' +str(time.localtime()[1]) + '_'+ str(time.localtime()[0])
-    camera.annotate_text = When 
-    camera.annotate_text_size = 12
-    camera.capture('/home/pi/Desktop/%s.jpg', When)
-    # make sure to stop the preview after taking the picture
-    camera.stop_preview() 
+    camera.start_preview()
+    time.sleep(2)
+    When = str(time.localtime()[3]) + '_' + str(time.localtime()[4]) + '_' + str(time.localtime()[5]) + '_' + str(time.localtime()[2]) + '_' + str(time.localtime()[1]) + '_' + str(time.localtime()[0])
+    camera.annotate_text = When
+    camera.annotate_text_size = 50
+    camera.capture('/home/pi/Desktop/payloadDemo2023/Photos/' + When + '.png')
+    camera.stop_preview()
 
 def MMORPG():
     # MMORPG uses a "H-Bridge" motor driver, this means that we only need
@@ -205,31 +85,36 @@ def MMORPG():
     while not leveled:
         # these if statements determine the shortest path for the system to achieve "level", so that
         # it does not turn the wrong direction.  The direction of the motor can be commanded by setting
-        # one of the two wires "HIGH" and the other "LOW"  
+        # one of the two wires "HIGH" and the other "LOW"
+        roll = 0
+        GPIO.output(Motor1A, GPIO.LOW)
+        GPIO.output(Motor1B, GPIO.HIGH)
+        time.sleep(1)
+        GPIO.output(Motor1A, GPIO.LOW)
+        GPIO.output(Motor1B, GPIO.LOW)
+            
         if (roll > 4) and (roll < 90):
-            MMORPGa.high() 
-            MMORPGb.low()
+            GPIO.output(Motor1A, GPIO.LOW)
+            GPIO.output(Motor1B, GPIO.HIGH)
         if (roll <176) and (roll > 90):
-            MMORPGa.low()
-            MMORPGb.high()
+            GPIO.output(Motor1A, GPIO.HIGH)
+            GPIO.output(Motor1B, GPIO.LOW)
         if (roll > 176) or (roll < 4):
-            leveled = Ture
+            leveled = True
     if leveled:
         # A motor can be locked by setting both wires to "HIGH" this stops the system from drifting
         # after achieving level
-        MMORPGa.high()
-        MMORPGb.high()
+        GPIO.output(Motor1A, GPIO.LOW)
+        GPIO.output(Motor1B, GPIO.LOW)
     
         
 def RAPS():
-    # set one motor "HIGH" and the other "LOW" to move the motor
-    RAPSa.high()
-    RAPSb.low()
-    # Wait for the motor to move into place
-    time.sleep(2)
-    # Lock the motor in place by setting both wires to "HIGH"
-    RAPSa.high()
-    RAPSb.high()
+    GPIO.output(Motor2A, GPIO.HIGH)
+    GPIO.output(Motor2B, GPIO.LOW)
+    time.sleep(0.5)
+    GPIO.output(Motor2A, GPIO.LOW)
+    GPIO.output(Motor2B, GPIO.LOW)
+    
     
 
 def forward(delay, steps):
@@ -272,3 +157,154 @@ def setStep(w1, w2, w3, w4):
     coil_A_2_pin.value = w2
     coil_B_1_pin.value = w3
     coil_B_2_pin.value = w4
+    
+def getAltitude():
+    temp, pressure, altitude = bmpsensor.readBmp180()
+    return altitude
+
+def angles():
+    accel = mpu.acceleration
+    gyro = mpu.gyro
+    data = Fusion.update_nomag(accel, gyro)
+    return data
+
+    
+#========================================================================
+# Create DC motor objects
+#========================================================================
+# Define the outputs that are dedicated to MMORPG
+
+
+
+#========================================================================
+# Create stepper motor objects
+#========================================================================
+# Stepper motors are complex, if you care how they actually work, I sugest reading the artical linked in
+# the headder
+coil_A_1_pin = digitalio.DigitalInOut(board.D17)
+coil_A_2_pin = digitalio.DigitalInOut(board.D27)
+coil_B_1_pin = digitalio.DigitalInOut(board.D22)
+coil_B_2_pin = digitalio.DigitalInOut(board.D23)
+
+coil_A_1_pin.direction = digitalio.Direction.OUTPUT
+coil_A_2_pin.direction = digitalio.Direction.OUTPUT
+coil_B_1_pin.direction = digitalio.Direction.OUTPUT
+coil_B_2_pin.direction = digitalio.Direction.OUTPUT
+
+    
+#========================================================================
+# Determine the state of the payload using avalible sensor data:
+#========================================================================
+Launched = False
+Apogee = False
+Landed = False
+count = 0
+#startHeight = getAltitude()
+#print(startHeight)
+"""
+while not Landed:  
+    while not Launched:
+        pitch = 0
+        roll = 0
+        altitude = getAltitude()
+        print(altitude)
+        if (pitch < 45) and (altitude > startHeight + 100) and (roll < 45):
+            count += 1
+        if (pitch > 45) or (altitude < startHeight + 100) or (roll > 45):
+            count = 0
+        if (count > 10):
+            Launched = True
+            print("Launched")
+            #oldAltitude = getAltitude()
+    if Launched:
+        count = 0
+        while not Apogee:
+            altitude = getAltitude()
+            verticalSpeed = altitude - oldAltitude
+            oldAltitude = altitude
+            if (verticalSpeed < 0):
+                count += 1
+            if (verticalSpeed > 0):
+                count = 0
+            if (count > 2):
+                Apogee = True
+                print("Apogee")
+                count = 0
+        while not Landed:
+            altitude = getAltitude()
+            verticalSpeed = altitude - oldAltitude
+            oldAltitude = altitude
+            if (altitude < startHeight + 1):
+                count += 1
+                print("count +")
+            if (altitude > startHeight + 1):
+                count = 0
+                print("count-")
+            if (count > 10):
+                Landed = True
+                print("landing")
+        if Landed:
+            print("Landing")
+            break
+"""
+# add a delay here for one minute
+#MMORPG()
+time.sleep(60)
+#RAPS()
+
+#========================================================================
+# Task 1: A1—Turn camera 60º to the right
+#========================================================================
+# This task is done using a stepper motor
+#backwards(0.01, 90)
+takepicture()
+
+
+#========================================================================
+# Task 2: B2—Turn camera 60º to the left
+#========================================================================
+# This task is done using a stepper motor
+#forward(0.01, 90)
+takepicture()
+
+#========================================================================
+# Task 3: C3—Take picture
+#========================================================================
+# This task is redundent and it will be performed after every other task
+
+#========================================================================
+# Task 4: D4—Change camera mode from color to grayscale
+#========================================================================
+camera.color_effects = (128, 128)
+takepicture()
+
+#========================================================================
+# Task 5: E5—Change camera mode back from grayscale to color
+#========================================================================
+camera.color_effects = (0,0)
+camera.image_effect = 'none'
+takepicture()
+
+#========================================================================
+# Task 6: F6—Rotate image 180º (upside down). camera.rotation = 180
+#========================================================================
+camera.rotation = 180
+takepicture()
+
+#========================================================================
+# Task 7: G7—Special effects filter (Apply any filter or image distortion you want and
+# state what filter or distortion was used).
+#========================================================================
+camera.image_effect = 'colorswap'
+takepicture()
+
+#========================================================================
+# Task 9: H8—Remove all filters.
+#========================================================================
+camera.image_effect = 'none'
+takepicture()
+
+
+
+
+
