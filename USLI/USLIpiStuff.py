@@ -1,4 +1,3 @@
-
 #========================================================================
 # Ben  Davis
 # 2/1/23
@@ -39,8 +38,8 @@ import board
 # Create objects
 #========================================================================
 # Create camera object
-camera = picamera.PiCamera() # this creates an object required to interface with the camera library
-camera.resolution = (1920, 1080) # this deffines the quality of the images
+#camera = picamera.PiCamera() # this creates an object required to interface with the camera library
+#camera.resolution = (1920, 1080) # this deffines the quality of the images
 
 # Set the callsign
 callsign = "KQ4CTL-6"
@@ -111,7 +110,6 @@ coil_A_1_pin = digitalio.DigitalInOut(board.D17)
 coil_A_2_pin = digitalio.DigitalInOut(board.D27)
 coil_B_1_pin = digitalio.DigitalInOut(board.D22)
 coil_B_2_pin = digitalio.DigitalInOut(board.D23)
-
 coil_A_1_pin.direction = digitalio.Direction.OUTPUT
 coil_A_2_pin.direction = digitalio.Direction.OUTPUT
 coil_B_1_pin.direction = digitalio.Direction.OUTPUT
@@ -125,7 +123,7 @@ coil_B_2_pin.direction = digitalio.Direction.OUTPUT
 # Set the time between message transmissions
 messageDelay = 60
 # Set the name of the file
-file = "message.txt"
+file = "log.txt.txt"
 
 while True:
     # Read the second to last line of the file
@@ -133,10 +131,10 @@ while True:
     callsignLine = f.readlines()[-3]
     # Read the last line of the file
     f = open(file, 'r')
-    message = f.readlines()[-2]
+    message = f.readlines()[-1]
     # Print the information and close the file
-    print(callsignLine)
-    print(message)
+    #print(callsignLine)
+    #print(message)
     f.close()
 
     # check if the message came from the correct call sign
@@ -154,19 +152,19 @@ while True:
     # if a message from the correct call sign was received,  read the commands
     if (importantMessage):
         skipover = False
-        readingTime = message.find('"') + 1
+        readingTime = 0 #message.find('{') + 1
             
         while(skipover == False):
             command = str(message[readingTime]) + str(message[readingTime+1])
                     
             readingTime = readingTime + 1
-            if (str(message[readingTime]) == '"'):
+            if (str(message[readingTime]) == '{'):
                 skipover = True
             readingTime = readingTime + 1
-            if (str(message[readingTime]) == '"'):
+            if (str(message[readingTime]) == '{'):
                 skipover = True
             readingTime = readingTime + 1
-            if (str(message[readingTime]) == '"'):
+            if (str(message[readingTime]) == '{'):
                 skipover = True
                         
             print(command)
@@ -243,6 +241,4 @@ while True:
             #========================================================================
         print("All commands done")
         time.sleep(messageDelay)
-            
-        
             
