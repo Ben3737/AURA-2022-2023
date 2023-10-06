@@ -1,0 +1,49 @@
+This document describes the packets of the MARCO-EASE-SOAR-POLO system
+
+----- PACKET DESCRIPTION -----
+One packet is transmitted by each system.
+Some parts of this packet mean different things when sent from different systems.
+Each system will use the system address to determine how each part of the packet should be used.
+For example, MARCO sending a 1 for byte1, bit0 indicates that the system should arm.
+SOAR sending a 1 for byte1, bit0 indicates that the system is currently armed.
+
+Byte 0 - System address (0 = MARCO, 1 = EASE, 2 = SOAR, 3 = POLO)
+
+Byte 1 - Binary statuses
+  Bit 0 - Armed/disarmed
+  Bit 1 - EASE dir
+  Bit 2 - SOAR dir
+  Bit 3 - SLS dir
+  Bit 4 - LEGS dir
+  Bit 5 - Sundial calibrate (active = 1)
+  Bit 6 - Sundial calibrate sun/shade (sun = 1)
+  Bit 7 - Range/direction find flag (SOAR = initiate, MARCO = acknowledge)
+  
+Byte 2 - EASE speed
+
+Byte 3 - SOAR speed
+
+Byte 4 - SLS speed
+
+Byte 5 - LEGS 1 speed
+
+Byte 6 - LEGS 2 speed
+
+Byte 7 - Launch/Landing detection (launch = 1, landing = 2)
+
+----- COMMUNICATION TIMING DESCRIPTION -----
+MARCO sends packets every second + whenever a serial command is received
+MARCO will not send a command for 5ms after transmitting - this allows SOAR and EASE to transmit
+SOAR sends a packet 2ms after receiving a packet from MARCO
+EASE sends a packet 2ms after receiving a packet from SOAR
+
+Once POLO sends the packet for range/direction find, the control scheme changes to something else
+
+----- PC COMMUNICATION DESCRIPTION -----
+"motorArm" + "on" or "off" -> this activates motor control
+"payloadArm" + "on" or "off" -> this activates autonomous operation
+"calibrate" + "sun" or "shade" -> this calibrates the sundial
+"ease" + "up" or "down" or "off"
+"soar" + "up" or "down" or "off"
+"sls" + "up" or "down" or "off"
+"legs" + "up" or "down" or "off"
